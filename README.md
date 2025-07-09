@@ -23,7 +23,7 @@ Key features:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/braingraph.git
+   git clone https://github.com/MRI-Lab-Graz/braingraph.git
    cd braingraph
    ```
 
@@ -346,19 +346,6 @@ All matrices must have the same shape.
 - Set `n_cpus` to match your system (default uses all cores)
 - For very large datasets (>1000 nodes), consider subsampling
 - GPU acceleration (PyTorch) is automatically used when available
-
-## Citation
-
-If you use braingraph in your research, please cite:
-
-```bibtex
-@software{braingraph,
-  title = {braingraph: Graph-theoretic analysis of brain connectomes},
-  author = {Your Name},
-  year = {2025},
-  url = {https://github.com/yourusername/braingraph}
-}
-```
 
 ## License
 
