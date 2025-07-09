@@ -1,0 +1,17 @@
+            Mixed Linear Model Regression Results
+==============================================================
+Model:            MixedLM Dependent Variable: char_path_length
+No. Observations: 87      Method:             REML            
+No. Groups:       22      Scale:              0.0000          
+Min. group size:  3       Log-Likelihood:     594.7768        
+Max. group size:  4       Converged:          Yes             
+Mean group size:  4.0                                         
+--------------------------------------------------------------
+                     Coef. Std.Err.   z    P>|z| [0.025 0.975]
+--------------------------------------------------------------
+Intercept            0.004    0.000 82.697 0.000  0.004  0.004
+C(timepoint)[T.2]    0.000    0.000  0.324 0.746 -0.000  0.000
+C(timepoint)[T.3]    0.000    0.000  0.656 0.512 -0.000  0.000
+C(timepoint)[T.4]    0.000    0.000  0.469 0.639 -0.000  0.000
+subject Var          0.000    0.000                           
+==============================================================

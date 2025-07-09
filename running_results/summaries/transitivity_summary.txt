@@ -1,0 +1,17 @@
+            Mixed Linear Model Regression Results
+=============================================================
+Model:             MixedLM  Dependent Variable:  transitivity
+No. Observations:  87       Method:              REML        
+No. Groups:        22       Scale:               0.0002      
+Min. group size:   3        Log-Likelihood:      202.4953    
+Max. group size:   4        Converged:           Yes         
+Mean group size:   4.0                                       
+-------------------------------------------------------------
+                  Coef.  Std.Err.    z    P>|z| [0.025 0.975]
+-------------------------------------------------------------
+Intercept          0.793    0.007 115.792 0.000  0.779  0.806
+C(timepoint)[T.2] -0.007    0.004  -1.713 0.087 -0.015  0.001
+C(timepoint)[T.3] -0.006    0.004  -1.400 0.162 -0.014  0.002
+C(timepoint)[T.4] -0.001    0.004  -0.247 0.805 -0.009  0.007
+subject Var        0.001    0.024                            
+=============================================================

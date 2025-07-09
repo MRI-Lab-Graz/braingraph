@@ -1,0 +1,30 @@
+RUNNING TRAINING EFFECT ANALYSIS SUMMARY
+==================================================
+
+Analysis performed: 2025-07-09 17:01:36
+Data file: graph_metrics_global.csv
+Number of subjects: 22
+Number of metrics: 1
+
+EXPERIMENTAL DESIGN:
+- Session 1: Baseline
+- Session 2: Pre-training (end of control period)
+- Session 3: Mid-training
+- Session 4: Post-training
+- Control period: Session 1 → Session 2 (no training)
+- Training period: Session 2 → Session 4 (running training)
+
+MAIN FINDINGS:
+------------------------------
+
+GLOBAL_EFFICIENCY:
+  Training vs Control difference: 0.007081
+  P-value: 0.0441
+  Effect size (Cohen's d): 0.4805
+  Significance: *
+
+SIGNIFICANT TRAINING EFFECTS (p < 0.05):
+- global_efficiency: p = 0.0441, d = 0.480
+
+POWER ANALYSIS SUMMARY:
+------------------------------

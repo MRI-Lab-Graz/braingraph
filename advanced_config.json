@@ -1,0 +1,61 @@
+{
+    "input_file": "graph_metrics_global.csv",
+    "output_folder": "advanced_stats_results",
+    "model": "{metric} ~ C(timepoint) + (1|subject)",
+    "type": "global",
+    "metrics": ["global_efficiency", "modularity", "clustering_coef", "transitivity"],
+    
+    "advanced_models": {
+        "basic_timepoint": "{metric} ~ C(timepoint) + (1|subject)",
+        "linear_trend": "{metric} ~ timepoint + (1|subject)",
+        "quadratic_trend": "{metric} ~ timepoint + I(timepoint**2) + (1|subject)",
+        "piecewise_linear": "{metric} ~ timepoint*I(timepoint>2) + (1|subject)",
+        "pre_post_contrast": "{metric} ~ I(timepoint>2) + (1|subject)",
+        "dose_response": "{metric} ~ I(timepoint-2)*I(timepoint>2) + (1|subject)",
+        "random_slopes": "{metric} ~ timepoint + (timepoint|subject)",
+        "baseline_adjusted": "{metric} ~ C(timepoint) + baseline_{metric} + (1|subject)"
+    },
+    
+    "contrast_codes": {
+        "description": "Custom contrast coding for training effect analysis",
+        "control_vs_training": [
+            [-0.5, -0.5, 0.5, 0.5],
+            "Contrast: Control period (T1,T2) vs Training period (T3,T4)"
+        ],
+        "linear_trend": [
+            [-3, -1, 1, 3],
+            "Linear trend across all timepoints"
+        ],
+        "training_onset": [
+            [0, 0, -1, 1],
+            "Training onset: T3 vs T4 (within training period)"
+        ]
+    },
+    
+    "model_comparisons": {
+        "null_model": "{metric} ~ 1 + (1|subject)",
+        "time_linear": "{metric} ~ timepoint + (1|subject)",
+        "time_categorical": "{metric} ~ C(timepoint) + (1|subject)",
+        "intervention_model": "{metric} ~ I(timepoint>2) + (1|subject)",
+        "full_model": "{metric} ~ C(timepoint) + (timepoint|subject)"
+    },
+    
+    "effect_size_calculations": {
+        "cohens_d": true,
+        "eta_squared": true,
+        "omega_squared": true,
+        "confidence_intervals": 0.95
+    },
+    
+    "post_hoc_tests": {
+        "pairwise_comparisons": true,
+        "bonferroni_correction": true,
+        "fdr_correction": true
+    },
+    
+    "power_analysis": {
+        "desired_power": [0.80, 0.90],
+        "alpha": 0.05,
+        "effect_sizes": [0.2, 0.5, 0.8]
+    }
+}

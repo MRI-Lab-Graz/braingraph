@@ -9,5 +9,16 @@
         "char_path_length",
         "small_world"
     ],
-    "description": "Configuration for running training analysis with 22 subjects x 4 sessions"
+    "model": "{metric} ~ C(timepoint)",
+    "type": "global",
+    "model_formulas": {
+        "categorical_timepoint": "{metric} ~ C(timepoint)",
+        "pre_post_contrast": "{metric} ~ post_training", 
+        "piecewise_slopes": "{metric} ~ time_in_control + time_in_training",
+        "polynomial_time": "{metric} ~ timepoint + I(timepoint**2)",
+        "baseline_adjusted": "{metric} ~ C(timepoint) + baseline_value",
+        "random_slopes": "{metric} ~ C(timepoint)"
+    },
+    "primary_model": "pre_post_contrast",
+    "description": "Configuration for running training analysis with sophisticated model formulas"
 }

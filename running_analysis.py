@@ -348,6 +348,90 @@ def create_effect_size_summary_plot(all_results, output_dir):
     plt.close()
     print(f"📊 Effect size summary plot saved")
 
+def run_config_models(df, metric, model_formulas, primary_model, output_dir):
+    """Run the model formulas specified in the config file."""
+    print(f"\n=== CONFIG-BASED MODEL ANALYSIS: {metric} ===")
+    
+    results = {}
+    
+    # Create derived variables needed for the models
+    df_model = df.copy()
+    df_model['post_training'] = (df_model['timepoint'] > 2).astype(int)
+    df_model['time_in_control'] = np.where(df_model['timepoint'] <= 2, df_model['timepoint'] - 1, 1)
+    df_model['time_in_training'] = np.where(df_model['timepoint'] > 2, df_model['timepoint'] - 2, 0)
+    
+    # Add baseline values for baseline_adjusted model
+    baseline_values = df_model[df_model['timepoint'] == 1].groupby('subject')[metric].first()
+    df_model['baseline_value'] = df_model['subject'].map(baseline_values)
+    
+    for model_name, formula_template in model_formulas.items():
+        print(f"\n--- Running {model_name} model ---")
+        
+        try:
+            # Insert metric name into formula
+            formula = formula_template.format(metric=metric)
+            print(f"Formula: {formula}")
+            
+            # Run mixed-effects model
+            model = smf.mixedlm(formula, df_model, groups="subject")
+            result = model.fit()
+            
+            # Save detailed results
+            model_results = {
+                'formula': formula,
+                'aic': result.aic,
+                'bic': result.bic,
+                'log_likelihood': result.llf,
+                'converged': result.converged,
+                'params': dict(result.params),
+                'pvalues': dict(result.pvalues),
+                'confidence_intervals': result.conf_int().to_dict(),
+                'summary': result.summary().as_text()
+            }
+            
+            results[model_name] = model_results
+            
+            # Save individual model summary
+            summary_path = os.path.join(output_dir, f"{metric}_{model_name}_model.txt")
+            with open(summary_path, "w") as f:
+                f.write(f"MODEL: {model_name}\n")
+                f.write(f"FORMULA: {formula}\n")
+                f.write("="*60 + "\n")
+                f.write(result.summary().as_text())
+                
+                # Add interpretation for key models
+                if model_name == "pre_post_contrast" and 'post_training' in result.params:
+                    coef = result.params['post_training']
+                    p_val = result.pvalues['post_training']
+                    f.write(f"\n\nINTERPRETATION:\n")
+                    f.write(f"Training effect: {coef:.6f}\n")
+                    f.write(f"P-value: {p_val:.4f}\n")
+                    f.write(f"Significance: {'***' if p_val < 0.001 else '**' if p_val < 0.01 else '*' if p_val < 0.05 else 'ns'}\n")
+            
+            print(f"✔️ {model_name} model completed (AIC: {result.aic:.2f})")
+            
+        except Exception as e:
+            print(f"❌ {model_name} model failed: {e}")
+            results[model_name] = {'error': str(e)}
+    
+    # Identify best model by AIC
+    valid_models = {k: v for k, v in results.items() if 'aic' in v}
+    if valid_models:
+        best_model = min(valid_models.keys(), key=lambda k: valid_models[k]['aic'])
+        print(f"\n🏆 Best model by AIC: {best_model} (AIC: {valid_models[best_model]['aic']:.2f})")
+    
+    # Highlight primary model results
+    if primary_model in results and 'error' not in results[primary_model]:
+        primary_results = results[primary_model]
+        print(f"\n🎯 PRIMARY MODEL ({primary_model}) RESULTS:")
+        for param, value in primary_results['params'].items():
+            if param != 'Intercept':
+                p_val = primary_results['pvalues'][param]
+                sig = '***' if p_val < 0.001 else '**' if p_val < 0.01 else '*' if p_val < 0.05 else 'ns'
+                print(f"  {param}: {value:.6f} (p = {p_val:.4f}) {sig}")
+    
+    return results
+
 def main():
     parser = argparse.ArgumentParser(description="Advanced running training analysis")
     parser.add_argument("--config", type=str, help="Path to JSON configuration file")
@@ -367,6 +451,10 @@ def main():
     data_file = args.data or config.get("input_file", config.get("data_file"))
     output_dir = args.output or config.get("output_folder", config.get("output_dir", "running_analysis_results"))
     metrics_list = args.metrics or config.get("metrics")
+    
+    # Get model formulas from config
+    model_formulas = config.get("model_formulas", {})
+    primary_model = config.get("primary_model", "pre_post_contrast")
     
     if not data_file:
         parser.error("Either --data argument or 'input_file'/'data_file' in config file is required")
@@ -403,27 +491,37 @@ def main():
         
         metric_results = {}
         
-        # 1. Contrast analysis (main approach)
+        # 1. Config-based model analysis (if model formulas provided)
+        if model_formulas:
+            config_results = run_config_models(df, metric, model_formulas, primary_model, args.output)
+            metric_results['config_models'] = config_results
+        
+        # 2. Contrast analysis (built-in approach)
         contrast_results, changes_df = contrast_analysis(df, metric, os.path.join(args.output, "plots"))
         metric_results['contrast'] = contrast_results
         
         # Save individual changes
         changes_df.to_csv(os.path.join(args.output, f"{metric}_changes.csv"), index=False)
         
-        # 2. Piecewise analysis
+        # 3. Piecewise analysis (built-in)
         piecewise_results = piecewise_analysis(df, metric)
         if piecewise_results:
             metric_results['piecewise'] = piecewise_results
         
-        # 3. Dose-response analysis
+        # 4. Dose-response analysis (built-in)
         dose_results = dose_response_analysis(df, metric)
         if dose_results:
             metric_results['dose_response'] = dose_results
         
-        # 4. Power analysis
+        # 5. Power analysis
         power_results = generate_power_analysis_recommendations(df, metric, contrast_results, args.output)
         if power_results:
             metric_results['power'] = power_results
+        
+        # 5. Config-based model analysis
+        config_results = run_config_models(df, metric, model_formulas, primary_model, args.output)
+        if config_results:
+            metric_results['config_models'] = config_results
         
         all_results[metric] = metric_results
         

@@ -1,0 +1,17 @@
+            Mixed Linear Model Regression Results
+=============================================================
+Model:              MixedLM Dependent Variable: assortativity
+No. Observations:   87      Method:             REML         
+No. Groups:         22      Scale:              0.0001       
+Min. group size:    3       Log-Likelihood:     233.8177     
+Max. group size:    4       Converged:          Yes          
+Mean group size:    4.0                                      
+-------------------------------------------------------------
+                  Coef.  Std.Err.    z    P>|z| [0.025 0.975]
+-------------------------------------------------------------
+Intercept         -0.062    0.003 -18.134 0.000 -0.069 -0.055
+C(timepoint)[T.2] -0.001    0.003  -0.279 0.780 -0.007  0.005
+C(timepoint)[T.3]  0.001    0.003   0.356 0.722 -0.005  0.007
+C(timepoint)[T.4]  0.003    0.003   1.042 0.297 -0.003  0.010
+subject Var        0.000    0.006                            
+=============================================================
