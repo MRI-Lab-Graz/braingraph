@@ -1,0 +1,5 @@
+{
+  "input_dir": "./connectomes_count",
+  "output_dir": "./results",
+  "n_cpus": 4
+}

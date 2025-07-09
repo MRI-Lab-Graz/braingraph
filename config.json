@@ -1,0 +1,6 @@
+{
+  "input_file": "graph_metrics_nodal.csv",
+  "output_folder": "results_nodal",
+  "model": "{metric} ~ C(timepoint) + C(node)",
+  "type": "nodal"
+}

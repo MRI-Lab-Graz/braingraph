@@ -1,0 +1,6 @@
+# Ignore data, plots, results, and summaries directories
+/data/
+/plots/
+/results/
+/summaries/
+/graph/
