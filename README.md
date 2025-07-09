@@ -166,6 +166,108 @@ Analyze extracted metrics with mixed-effects models:
 python graph_stats.py --config config.json
 ```
 
+### 4. Specialized Running Training Analysis
+
+For the specific experimental design with 22 subjects × 4 sessions where training starts after session 2, use the specialized analysis script:
+
+```bash
+python running_analysis.py --config running_config.json
+```
+
+#### Configuration File
+
+Create a `running_config.json` file:
+
+```json
+{
+    "input_file": "graph_metrics_global.csv",
+    "output_folder": "running_results", 
+    "metrics": [
+        "global_efficiency",
+        "modularity",
+        "clustering_coef",
+        "transitivity",
+        "char_path_length",
+        "small_world"
+    ]
+}
+```
+
+#### Alternative Usage
+
+You can also specify parameters directly via command line:
+
+```bash
+# Direct command line usage
+python running_analysis.py --data graph_metrics_global.csv --output running_results/
+
+# Mix config file with command line overrides
+python running_analysis.py --config running_config.json --metrics global_efficiency modularity
+```
+
+This script implements three complementary statistical approaches:
+
+#### Analysis Methods
+
+1. **Contrast Analysis** (Primary approach)
+   - Compares control period (T1→T2) vs training period (T2→T4)
+   - Paired t-tests and effect size calculations
+   - Baseline-adjusted analyses
+
+2. **Piecewise Analysis**
+   - Tests for slope changes at training onset
+   - Separate linear trends for control and training periods
+   - Mixed-effects modeling with random intercepts
+
+3. **Dose-Response Analysis**
+   - Examines linear relationship with training exposure
+   - Focuses on training period sessions (T2, T3, T4)
+   - Tests for cumulative training effects
+
+#### Running Analysis Options
+
+```bash
+# Recommended: Use configuration file
+python running_analysis.py --config running_config.json
+
+# Analyze specific metrics with config override
+python running_analysis.py \
+    --config running_config.json \
+    --metrics global_efficiency modularity clustering_coef
+
+# Direct command line (without config file)
+python running_analysis.py \
+    --data graph_metrics_global.csv \
+    --output running_results/ \
+    --metrics global_efficiency modularity
+```
+
+#### Output Files
+
+The running analysis generates:
+- **Summary report**: `running_analysis_summary_TIMESTAMP.txt`
+- **Individual plots**: Comprehensive 4-panel visualizations per metric
+- **Change scores**: `{metric}_changes.csv` files with period-specific changes
+- **Statistical details**: Model summaries and effect sizes
+
+#### Interpretation Guidelines
+
+**Significant Training Effects:**
+- p < 0.05 for training vs control contrast
+- Effect size (Cohen's d): Small (0.2), Medium (0.5), Large (0.8)
+- Positive slope change in piecewise analysis
+- Dose-response correlation with training sessions
+
+**Example Results Interpretation:**
+```
+Global Efficiency:
+  Training vs Control difference: 0.0234
+  P-value: 0.023
+  Effect size (Cohen's d): 0.68
+  Significance: *
+```
+This indicates a medium-to-large training effect on global efficiency.
+
 ## Configuration
 
 Create a `config.json` file to customize processing:
@@ -180,27 +282,56 @@ Create a `config.json` file to customize processing:
     "skip_cols": 3,
     "min_nonzero": 10,
     "min_sum": 1e-4,
-    "model_formula": "metric ~ timepoint + (1|subject)",
-    "data_file": "results/graph_metrics_global.csv",
-    "output_file": "results/statistical_results.csv",
+    "input_file": "graph_metrics_global.csv",
+    "output_folder": "results",
+    "model": "{metric} ~ timepoint",
+    "type": "global",
     "metrics": ["global_efficiency", "modularity", "clustering_coef"]
 }
 ```
 
+**Note**: Different scripts use slightly different config keys:
+- `extract_graph.py` and `graph_stats.py`: Use the main `config.json`
+- `running_analysis.py`: Uses `running_config.json` (optimized for training analysis)
+- Command line arguments always override config file settings
+
+**Note**: The configuration file serves both `extract_graph.py` and `graph_stats.py`, so it contains parameters for both scripts.
+
 ### Configuration Parameters
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `input_dir` | Directory containing connectome files | `"./connectomes"` |
-| `output_dir` | Output directory for results | `"."` |
-| `output_prefix` | Prefix for output filenames | `"graph_metrics"` |
-| `n_cpus` | Number of CPU cores to use | All available |
-| `skip_rows` | Number of header rows to skip | `2` (DSI Studio) |
-| `skip_cols` | Number of metadata columns to skip | `3` (DSI Studio) |
-| `min_nonzero` | Minimum non-zero connections | `10` |
-| `min_sum` | Minimum sum of connection weights | `1e-4` |
-| `model_formula` | Statistical model formula | - |
-| `metrics` | List of metrics to analyze | All metrics |
+| Parameter | Description | Default | Used By |
+|-----------|-------------|---------|---------|
+| `input_dir` | Directory containing connectome files | `"./connectomes"` | extract_graph.py |
+| `output_dir` | Output directory for results | `"."` | extract_graph.py |
+| `output_prefix` | Prefix for output filenames | `"graph_metrics"` | extract_graph.py |
+| `n_cpus` | Number of CPU cores to use | All available | extract_graph.py |
+| `skip_rows` | Number of header rows to skip | `2` (DSI Studio) | extract_graph.py |
+| `skip_cols` | Number of metadata columns to skip | `3` (DSI Studio) | extract_graph.py |
+| `min_nonzero` | Minimum non-zero connections | `10` | extract_graph.py |
+| `min_sum` | Minimum sum of connection weights | `1e-4` | extract_graph.py |
+| `input_file` | Path to graph metrics CSV file | - | graph_stats.py, running_analysis.py |
+| `output_folder` | Output directory for statistical results | `"results"` | graph_stats.py, running_analysis.py |
+| `model` | Statistical model formula (use `{metric}` placeholder) | - | graph_stats.py |
+| `type` | Analysis type (`"global"` or `"nodal"`) | `"global"` | graph_stats.py |
+| `metrics` | List of metrics to analyze | All metrics | All scripts |
+
+### Statistical Model Examples
+
+The `model` parameter uses statsmodels formula syntax with `{metric}` as a placeholder:
+
+**Fixed Effects Models:**
+```json
+"model": "{metric} ~ timepoint"                    // Simple time effect
+"model": "{metric} ~ timepoint + group"            // Time + group effects  
+"model": "{metric} ~ timepoint * group"            // Time × group interaction
+```
+
+**Mixed Effects Models (requires subject grouping):**
+```json
+"model": "{metric} ~ timepoint + (1|subject)"           // Random intercepts
+"model": "{metric} ~ timepoint + group + (1|subject)"   // Fixed + random effects
+"model": "{metric} ~ timepoint + (timepoint|subject)"   // Random slopes
+```
 
 ## Output
 
@@ -263,7 +394,23 @@ python extract_graph.py \
 python graph_stats.py --config aal_stats.json
 ```
 
-### Example 3: Different Software Formats
+### Example 3: Complete Running Training Analysis
+
+```bash
+# 1. Check your data format
+python extract_graph.py --checkinput -i connectomes/
+
+# 2. Extract graph metrics
+python extract_graph.py --config config.json
+
+# 3. Run specialized running training analysis
+python running_analysis.py --config running_config.json
+
+# 4. Optional: Standard statistical analysis for comparison
+python graph_stats.py --config config.json
+```
+
+### Example 4: Different Software Formats
 
 ```bash
 # Check format for different software
@@ -287,7 +434,7 @@ echo '{
 python extract_graph.py --config custom_config.json
 ```
 
-### Example 4: Quality Control
+### Example 5: Quality Control
 
 ```bash
 # Check for shape inconsistencies

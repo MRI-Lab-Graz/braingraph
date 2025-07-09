@@ -1,6 +1,18 @@
 {
-  "input_file": "graph_metrics_nodal.csv",
-  "output_folder": "results_nodal",
-  "model": "{metric} ~ C(timepoint) + C(node)",
-  "type": "nodal"
+    "input_dir": "./connectomes",
+    "output_dir": "./results",
+    "output_prefix": "graph_metrics",
+    "n_cpus": 4,
+    "skip_rows": 2,
+    "skip_cols": 3,
+    "min_nonzero": 10,
+    "min_sum": 1e-4,
+    "input_file": "graph_metrics_global.csv",
+    "output_folder": "results",
+    "model": "{metric} ~ timepoint",
+    "type": "global",
+    "model_formula": "{metric} ~ timepoint + (1|subject)",
+    "data_file": "results/graph_metrics_global.csv",
+    "output_file": "results/statistical_results.csv",
+    "metrics": ["global_efficiency", "modularity", "clustering_coef"]
 }

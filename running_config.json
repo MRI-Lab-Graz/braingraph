@@ -1,0 +1,13 @@
+{
+    "input_file": "graph_metrics_global.csv",
+    "output_folder": "running_results",
+    "metrics": [
+        "global_efficiency",
+        "modularity", 
+        "clustering_coef",
+        "transitivity",
+        "char_path_length",
+        "small_world"
+    ],
+    "description": "Configuration for running training analysis with 22 subjects x 4 sessions"
+}
