@@ -220,10 +220,12 @@ def extract_metrics(matrix, matrix_id=None):
 
     return (geff, cpl, mod, clust, density, assortativity, transitivity, small_world), nodal
 
-def detailed_matrix_check(matrix, matrix_id=None):
+def detailed_matrix_check(matrix, matrix_id=None, expected_shape=None):
     errors = []
     if matrix.shape[0] != matrix.shape[1]:
         errors.append(f"Matrix is not square: shape={matrix.shape}")
+    if expected_shape and matrix.shape != expected_shape:
+        errors.append(f"Matrix shape {matrix.shape} does not match expected shape {expected_shape}")
     if not np.allclose(matrix, matrix.T):
         errors.append("Matrix is not symmetric.")
     if np.any(np.isnan(matrix)):
@@ -239,8 +241,36 @@ def detailed_matrix_check(matrix, matrix_id=None):
         return False
     return True
 
+def check_input_format(file_path, n_preview_lines=10):
+    """Check and display the format of an input file"""
+    logging.info(f"Checking input format for: {file_path}")
+    try:
+        with open(file_path, 'r') as f:
+            lines = []
+            for i, line in enumerate(f):
+                if i >= n_preview_lines:
+                    break
+                lines.append(f"Line {i+1:2d}: {line.rstrip()}")
+        
+        logging.info(f"First {len(lines)} lines of {os.path.basename(file_path)}:")
+        for line in lines:
+            logging.info(f"  {line}")
+        
+        # Try to read as we normally would
+        df_raw = pd.read_csv(file_path, delimiter='\t', header=None, skiprows=2)
+        logging.info(f"Raw dataframe shape after skipping 2 rows: {df_raw.shape}")
+        logging.info(f"First few column indices: {list(df_raw.columns[:10])}")
+        
+        df_clean = df_raw.iloc[:, 3:]
+        logging.info(f"Shape after removing first 3 columns: {df_clean.shape}")
+        
+        return True
+    except Exception as e:
+        logging.error(f"Error checking input format: {e}")
+        return False
+
 def process_file(args):
-    file, input_dir = args
+    file, input_dir, expected_shape = args
     match = re.match(r"sub-(\d+)_ses-(\d)\.txt", file)
     if not match:
         logging.warning(f"Filename {file} does not match expected pattern.")
@@ -260,10 +290,11 @@ def process_file(args):
     # Shape-Check
     logging.info(f"Matrix {file}: shape={matrix.shape}")
     if matrix.shape[0] != matrix.shape[1]:
-        logging.warning(f"Matrix {file} is not square: shape={matrix.shape}")
+        logging.error(f"Matrix {file} is not square: shape={matrix.shape}")
+        return None, None
 
     matrix = preprocess_matrix(matrix)
-    if not detailed_matrix_check(matrix, matrix_id=f"sub-{subj}_ses-{tp}"):
+    if not detailed_matrix_check(matrix, matrix_id=f"sub-{subj}_ses-{tp}", expected_shape=expected_shape):
         return None, None
 
     logging.info(f"Processing sub-{subj}_ses-{tp} ...")
@@ -325,6 +356,11 @@ def main():
         default=None,
         help="Number of CPUs to use (overrides config file)"
     )
+    parser.add_argument(
+        "--checkinput",
+        action="store_true",
+        help="Check input file format and show preview of first file, then exit"
+    )
     args = parser.parse_args()
 
     # Load config from JSON if given
@@ -365,13 +401,72 @@ def main():
         logging.error("No matching .txt files found.")
         return
 
+    # Check input format if requested
+    if args.checkinput:
+        logging.info("=== INPUT FORMAT CHECK ===")
+        first_file = sorted(files)[0]
+        first_file_path = os.path.join(input_dir, first_file)
+        check_input_format(first_file_path)
+        logging.info("Input format check completed. Exiting.")
+        return
+
+    # First pass: check all matrix shapes to ensure consistency
+    logging.info("=== SHAPE CONSISTENCY CHECK ===")
+    shapes = []
+    shape_errors = []
+    
+    for file in sorted(files):
+        try:
+            df_raw = pd.read_csv(os.path.join(input_dir, file), delimiter='\t', header=None, skiprows=2)
+            df_clean = df_raw.iloc[:, 3:]
+            matrix = df_clean.apply(pd.to_numeric, errors='coerce').fillna(0).values
+            shapes.append((file, matrix.shape))
+            logging.info(f"File {file}: shape {matrix.shape}")
+        except Exception as e:
+            shape_errors.append(f"Error reading {file}: {e}")
+            logging.error(f"Error reading {file}: {e}")
+    
+    if shape_errors:
+        logging.error("Errors encountered while checking shapes:")
+        for error in shape_errors:
+            logging.error(f"  {error}")
+        logging.error("Stopping due to file reading errors.")
+        return
+    
+    # Check if all shapes are identical
+    unique_shapes = list(set(shape[1] for shape in shapes))
+    if len(unique_shapes) > 1:
+        logging.error("SHAPE MISMATCH DETECTED!")
+        logging.error("All matrices must have the same shape. Found:")
+        for shape in unique_shapes:
+            files_with_shape = [s[0] for s in shapes if s[1] == shape]
+            logging.error(f"  Shape {shape}: {len(files_with_shape)} files")
+            if len(files_with_shape) <= 5:
+                logging.error(f"    Files: {', '.join(files_with_shape)}")
+            else:
+                logging.error(f"    First 5 files: {', '.join(files_with_shape[:5])}...")
+        logging.error("Stopping extraction due to shape inconsistency.")
+        return
+    
+    expected_shape = unique_shapes[0]
+    logging.info(f"✅ All {n_files} files have consistent shape: {expected_shape}")
+    
+    # Check if matrices are square
+    if expected_shape[0] != expected_shape[1]:
+        logging.error(f"Matrices are not square! Shape: {expected_shape}")
+        logging.error("All connectome matrices must be square (n_nodes x n_nodes).")
+        return
+    
+    logging.info(f"✅ All matrices are square with {expected_shape[0]} nodes.")
+    logging.info("=== STARTING PROCESSING ===")
+
     global_results = []
     nodal_results = []
 
     logging.info(f"Starting parallel processing of {n_files} files ...")
     try:
         with concurrent.futures.ProcessPoolExecutor(max_workers=n_cpus) as executor:
-            results = list(executor.map(process_file, [(file, input_dir) for file in sorted(files)]))
+            results = list(executor.map(process_file, [(file, input_dir, expected_shape) for file in sorted(files)]))
 
         for idx, (global_result, nodal_result) in enumerate(results, 1):
             if global_result is not None:
