@@ -71,9 +71,12 @@ value2  label2  2.24    0       0.38    ...
 ...
 ```
 
-- **First 2 rows**: Headers (will be skipped)
-- **First 3 columns**: Metadata (will be skipped)
+**Format Configuration:**
+- **Header rows**: Number of rows to skip (default: 2 for DSI Studio format)
+- **Metadata columns**: Number of columns to skip (default: 3 for DSI Studio format)
 - **Remaining data**: Square connectivity matrix (n_nodes × n_nodes)
+
+The script is flexible and can handle different software formats by configuring `skip_rows` and `skip_cols` parameters.
 
 ### File Naming Convention
 
@@ -135,7 +138,24 @@ python extract_graph.py --config config.json
 python extract_graph.py \
     -i connectomes_data/ \
     -o results/ \
-    --n_cpus 8
+    --n_cpus 8 \
+    --skip_rows 2 \
+    --skip_cols 3
+```
+
+#### Different Software Formats
+```bash
+# For ConnectomeDB format (hypothetical: 1 header row, 2 metadata columns)
+python extract_graph.py \
+    -i connectomedb_data/ \
+    --skip_rows 1 \
+    --skip_cols 2
+
+# For FreeSurfer format (hypothetical: 0 header rows, 1 metadata column)
+python extract_graph.py \
+    -i freesurfer_data/ \
+    --skip_rows 0 \
+    --skip_cols 1
 ```
 
 ### 3. Statistical Analysis
@@ -156,6 +176,8 @@ Create a `config.json` file to customize processing:
     "output_dir": "./results",
     "output_prefix": "graph_metrics",
     "n_cpus": 4,
+    "skip_rows": 2,
+    "skip_cols": 3,
     "min_nonzero": 10,
     "min_sum": 1e-4,
     "model_formula": "metric ~ timepoint + (1|subject)",
@@ -173,6 +195,8 @@ Create a `config.json` file to customize processing:
 | `output_dir` | Output directory for results | `"."` |
 | `output_prefix` | Prefix for output filenames | `"graph_metrics"` |
 | `n_cpus` | Number of CPU cores to use | All available |
+| `skip_rows` | Number of header rows to skip | `2` (DSI Studio) |
+| `skip_cols` | Number of metadata columns to skip | `3` (DSI Studio) |
 | `min_nonzero` | Minimum non-zero connections | `10` |
 | `min_sum` | Minimum sum of connection weights | `1e-4` |
 | `model_formula` | Statistical model formula | - |
@@ -239,7 +263,31 @@ python extract_graph.py \
 python graph_stats.py --config aal_stats.json
 ```
 
-### Example 3: Quality Control
+### Example 3: Different Software Formats
+
+```bash
+# Check format for different software
+python extract_graph.py --checkinput -i data_folder/ --skip_rows 1 --skip_cols 2
+
+# Extract with custom format parameters
+python extract_graph.py \
+    -i mrtrix_data/ \
+    -o results/ \
+    --skip_rows 0 \
+    --skip_cols 1
+
+# Use configuration file for reproducibility
+echo '{
+    "input_dir": "./custom_data",
+    "skip_rows": 1,
+    "skip_cols": 2,
+    "n_cpus": 6
+}' > custom_config.json
+
+python extract_graph.py --config custom_config.json
+```
+
+### Example 4: Quality Control
 
 ```bash
 # Check for shape inconsistencies

@@ -26,7 +26,9 @@ CONFIG = {
     "min_sum": 1e-4,
     "output_prefix": "graph_metrics",
     "output_dir": ".",
-    "n_cpus": multiprocessing.cpu_count()
+    "n_cpus": multiprocessing.cpu_count(),
+    "skip_rows": 2,
+    "skip_cols": 3
 }
 
 def setup_logging():
@@ -241,9 +243,10 @@ def detailed_matrix_check(matrix, matrix_id=None, expected_shape=None):
         return False
     return True
 
-def check_input_format(file_path, n_preview_lines=10):
+def check_input_format(file_path, skip_rows=2, skip_cols=3, n_preview_lines=10):
     """Check and display the format of an input file"""
     logging.info(f"Checking input format for: {file_path}")
+    logging.info(f"Configuration: skip_rows={skip_rows}, skip_cols={skip_cols}")
     try:
         with open(file_path, 'r') as f:
             lines = []
@@ -257,12 +260,12 @@ def check_input_format(file_path, n_preview_lines=10):
             logging.info(f"  {line}")
         
         # Try to read as we normally would
-        df_raw = pd.read_csv(file_path, delimiter='\t', header=None, skiprows=2)
-        logging.info(f"Raw dataframe shape after skipping 2 rows: {df_raw.shape}")
+        df_raw = pd.read_csv(file_path, delimiter='\t', header=None, skiprows=skip_rows)
+        logging.info(f"Raw dataframe shape after skipping {skip_rows} rows: {df_raw.shape}")
         logging.info(f"First few column indices: {list(df_raw.columns[:10])}")
         
-        df_clean = df_raw.iloc[:, 3:]
-        logging.info(f"Shape after removing first 3 columns: {df_clean.shape}")
+        df_clean = df_raw.iloc[:, skip_cols:]
+        logging.info(f"Shape after removing first {skip_cols} columns: {df_clean.shape}")
         
         return True
     except Exception as e:
@@ -270,7 +273,7 @@ def check_input_format(file_path, n_preview_lines=10):
         return False
 
 def process_file(args):
-    file, input_dir, expected_shape = args
+    file, input_dir, expected_shape, skip_rows, skip_cols = args
     match = re.match(r"sub-(\d+)_ses-(\d)\.txt", file)
     if not match:
         logging.warning(f"Filename {file} does not match expected pattern.")
@@ -280,8 +283,8 @@ def process_file(args):
     tp = int(match.group(2))
 
     try:
-        df_raw = pd.read_csv(os.path.join(input_dir, file), delimiter='\t', header=None, skiprows=2)
-        df_clean = df_raw.iloc[:, 3:]
+        df_raw = pd.read_csv(os.path.join(input_dir, file), delimiter='\t', header=None, skiprows=skip_rows)
+        df_clean = df_raw.iloc[:, skip_cols:]
         matrix = df_clean.apply(pd.to_numeric, errors='coerce').fillna(0).values
     except Exception as e:
         logging.error(f"Error reading {file}: {e}")
@@ -361,6 +364,18 @@ def main():
         action="store_true",
         help="Check input file format and show preview of first file, then exit"
     )
+    parser.add_argument(
+        "--skip_rows",
+        type=int,
+        default=None,
+        help="Number of header rows to skip when reading files (overrides config file)"
+    )
+    parser.add_argument(
+        "--skip_cols",
+        type=int,
+        default=None,
+        help="Number of metadata columns to skip when reading files (overrides config file)"
+    )
     args = parser.parse_args()
 
     # Load config from JSON if given
@@ -376,10 +391,16 @@ def main():
         CONFIG["output_dir"] = args.output_dir
     if args.n_cpus:
         CONFIG["n_cpus"] = args.n_cpus
+    if args.skip_rows is not None:
+        CONFIG["skip_rows"] = args.skip_rows
+    if args.skip_cols is not None:
+        CONFIG["skip_cols"] = args.skip_cols
 
     input_dir = CONFIG["input_dir"]
     output_dir = CONFIG["output_dir"]
     n_cpus = CONFIG.get("n_cpus", multiprocessing.cpu_count())
+    skip_rows = CONFIG.get("skip_rows", 2)
+    skip_cols = CONFIG.get("skip_cols", 3)
 
     # CPU/GPU Info
     cpu_count = multiprocessing.cpu_count()
@@ -394,6 +415,7 @@ def main():
         logging.info(f"Output folder '{output_dir}' was created.")
 
     logging.info(f"Starting processing in folder: {input_dir}")
+    logging.info(f"Data format: skip_rows={skip_rows}, skip_cols={skip_cols}")
 
     files = [f for f in os.listdir(input_dir) if f.endswith(".txt")]
     n_files = len(files)
@@ -406,7 +428,7 @@ def main():
         logging.info("=== INPUT FORMAT CHECK ===")
         first_file = sorted(files)[0]
         first_file_path = os.path.join(input_dir, first_file)
-        check_input_format(first_file_path)
+        check_input_format(first_file_path, skip_rows=skip_rows, skip_cols=skip_cols)
         logging.info("Input format check completed. Exiting.")
         return
 
@@ -417,8 +439,8 @@ def main():
     
     for file in sorted(files):
         try:
-            df_raw = pd.read_csv(os.path.join(input_dir, file), delimiter='\t', header=None, skiprows=2)
-            df_clean = df_raw.iloc[:, 3:]
+            df_raw = pd.read_csv(os.path.join(input_dir, file), delimiter='\t', header=None, skiprows=skip_rows)
+            df_clean = df_raw.iloc[:, skip_cols:]
             matrix = df_clean.apply(pd.to_numeric, errors='coerce').fillna(0).values
             shapes.append((file, matrix.shape))
             logging.info(f"File {file}: shape {matrix.shape}")
@@ -466,7 +488,7 @@ def main():
     logging.info(f"Starting parallel processing of {n_files} files ...")
     try:
         with concurrent.futures.ProcessPoolExecutor(max_workers=n_cpus) as executor:
-            results = list(executor.map(process_file, [(file, input_dir, expected_shape) for file in sorted(files)]))
+            results = list(executor.map(process_file, [(file, input_dir, expected_shape, skip_rows, skip_cols) for file in sorted(files)]))
 
         for idx, (global_result, nodal_result) in enumerate(results, 1):
             if global_result is not None:
