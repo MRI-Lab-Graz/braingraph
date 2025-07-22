@@ -1,0 +1,6 @@
+Metric,Control_Change_Mean,Control_Change_SEM,Control_p,Control_d,Training_Change_Mean,Training_Change_SEM,Training_p,Training_d,Net_Effect_Mean,Net_Effect_SEM,Net_Effect_p,Net_Effect_d,Significant
+Global Efficiency,-0.0033,0.0021,0.137,-0.346,0.0038,0.0020,0.077,0.417,0.0071,0.0033,0.044,0.480,Yes
+Transitivity,-0.0076,0.0038,0.060,-0.446,0.0068,0.0039,0.100,0.386,0.0144,0.0062,0.031,0.519,Yes
+Modularity,0.0006,0.0027,0.839,0.046,-0.0010,0.0027,0.703,-0.087,-0.0016,0.0051,0.754,-0.071,No
+Clustering Coef,-0.0000,0.0000,0.336,-0.220,0.0000,0.0001,0.625,0.111,0.0001,0.0001,0.447,0.173,No
+Char Path Length,0.0000,0.0000,0.517,0.147,-0.0000,0.0000,0.977,-0.006,-0.0000,0.0001,0.729,-0.079,No

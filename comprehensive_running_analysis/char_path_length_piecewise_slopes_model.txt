@@ -1,0 +1,19 @@
+MODEL: piecewise_slopes
+FORMULA: char_path_length ~ time_in_control + time_in_training
+============================================================
+            Mixed Linear Model Regression Results
+==============================================================
+Model:            MixedLM Dependent Variable: char_path_length
+No. Observations: 87      Method:             REML            
+No. Groups:       22      Scale:              0.0000          
+Min. group size:  3       Log-Likelihood:     603.3998        
+Max. group size:  4       Converged:          Yes             
+Mean group size:  4.0                                         
+--------------------------------------------------------------
+                     Coef. Std.Err.   z    P>|z| [0.025 0.975]
+--------------------------------------------------------------
+Intercept            0.004    0.000 82.860 0.000  0.004  0.004
+time_in_control      0.000    0.000  0.429 0.668 -0.000  0.000
+time_in_training     0.000    0.000  0.155 0.877 -0.000  0.000
+subject Var          0.000    0.000                           
+==============================================================

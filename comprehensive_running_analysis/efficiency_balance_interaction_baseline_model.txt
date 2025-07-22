@@ -1,0 +1,24 @@
+MODEL: interaction_baseline
+FORMULA: efficiency_balance ~ C(timepoint) * baseline_value
+============================================================
+                   Mixed Linear Model Regression Results
+===========================================================================
+Model:                 MixedLM    Dependent Variable:    efficiency_balance
+No. Observations:      87         Method:                REML              
+No. Groups:            22         Scale:                 0.0004            
+Min. group size:       3          Log-Likelihood:        186.7965          
+Max. group size:       4          Converged:             Yes               
+Mean group size:       4.0                                                 
+---------------------------------------------------------------------------
+                                 Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+---------------------------------------------------------------------------
+Intercept                        -0.000    0.145 -0.000 1.000 -0.284  0.284
+C(timepoint)[T.2]                 0.454    0.183  2.477 0.013  0.095  0.813
+C(timepoint)[T.3]                 0.150    0.183  0.817 0.414 -0.209  0.509
+C(timepoint)[T.4]                 0.262    0.184  1.427 0.153 -0.098  0.623
+baseline_value                    1.000    0.098 10.177 0.000  0.807  1.193
+C(timepoint)[T.2]:baseline_value -0.311    0.124 -2.502 0.012 -0.554 -0.067
+C(timepoint)[T.3]:baseline_value -0.106    0.124 -0.852 0.394 -0.349  0.138
+C(timepoint)[T.4]:baseline_value -0.179    0.125 -1.434 0.152 -0.423  0.066
+subject Var                       0.000    0.004                           
+===========================================================================

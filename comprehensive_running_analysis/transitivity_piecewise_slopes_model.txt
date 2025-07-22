@@ -1,0 +1,19 @@
+MODEL: piecewise_slopes
+FORMULA: transitivity ~ time_in_control + time_in_training
+============================================================
+           Mixed Linear Model Regression Results
+============================================================
+Model:              MixedLM Dependent Variable: transitivity
+No. Observations:   87      Method:             REML        
+No. Groups:         22      Scale:              0.0002      
+Min. group size:    3       Log-Likelihood:     206.4173    
+Max. group size:    4       Converged:          Yes         
+Mean group size:    4.0                                     
+------------------------------------------------------------
+                 Coef.  Std.Err.    z    P>|z| [0.025 0.975]
+------------------------------------------------------------
+Intercept         0.793    0.007 115.870 0.000  0.779  0.806
+time_in_control  -0.008    0.004  -1.944 0.052 -0.015  0.000
+time_in_training  0.003    0.002   1.441 0.150 -0.001  0.007
+subject Var       0.001    0.024                            
+============================================================

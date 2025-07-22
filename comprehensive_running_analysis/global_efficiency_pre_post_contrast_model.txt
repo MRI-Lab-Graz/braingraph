@@ -1,0 +1,24 @@
+MODEL: pre_post_contrast
+FORMULA: global_efficiency ~ post_training
+============================================================
+             Mixed Linear Model Regression Results
+===============================================================
+Model:            MixedLM Dependent Variable: global_efficiency
+No. Observations: 87      Method:             REML             
+No. Groups:       22      Scale:              0.0001           
+Min. group size:  3       Log-Likelihood:     260.4319         
+Max. group size:  4       Converged:          Yes              
+Mean group size:  4.0                                          
+----------------------------------------------------------------
+                 Coef.  Std.Err.     z     P>|z|  [0.025  0.975]
+----------------------------------------------------------------
+Intercept        0.869     0.004  247.251  0.000   0.863   0.876
+post_training    0.000     0.002    0.179  0.858  -0.003   0.003
+subject Var      0.000     0.012                                
+===============================================================
+
+
+INTERPRETATION:
+Training effect: 0.000291
+P-value: 0.8581
+Significance: ns

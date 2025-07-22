@@ -1,0 +1,24 @@
+MODEL: interaction_baseline
+FORMULA: density ~ C(timepoint) * baseline_value
+============================================================
+                   Mixed Linear Model Regression Results
+===========================================================================
+Model:                   MixedLM        Dependent Variable:        density 
+No. Observations:        87             Method:                    REML    
+No. Groups:              22             Scale:                     0.0002  
+Min. group size:         3              Log-Likelihood:            208.0061
+Max. group size:         4              Converged:                 Yes     
+Mean group size:         4.0                                               
+---------------------------------------------------------------------------
+                                 Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+---------------------------------------------------------------------------
+Intercept                         0.000    0.110  0.000 1.000 -0.216  0.216
+C(timepoint)[T.2]                 0.014    0.123  0.111 0.911 -0.228  0.255
+C(timepoint)[T.3]                -0.059    0.123 -0.481 0.631 -0.301  0.182
+C(timepoint)[T.4]                -0.023    0.123 -0.190 0.850 -0.265  0.218
+baseline_value                    1.000    0.148  6.743 0.000  0.709  1.291
+C(timepoint)[T.2]:baseline_value -0.027    0.166 -0.160 0.873 -0.352  0.299
+C(timepoint)[T.3]:baseline_value  0.073    0.166  0.438 0.661 -0.253  0.398
+C(timepoint)[T.4]:baseline_value  0.033    0.166  0.196 0.845 -0.293  0.358
+subject Var                       0.000    0.005                           
+===========================================================================

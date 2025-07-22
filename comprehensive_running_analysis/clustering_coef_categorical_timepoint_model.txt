@@ -1,0 +1,20 @@
+MODEL: categorical_timepoint
+FORMULA: clustering_coef ~ C(timepoint)
+============================================================
+            Mixed Linear Model Regression Results
+=============================================================
+Model:            MixedLM Dependent Variable: clustering_coef
+No. Observations: 87      Method:             REML           
+No. Groups:       22      Scale:              0.0000         
+Min. group size:  3       Log-Likelihood:     600.4555       
+Max. group size:  4       Converged:          Yes            
+Mean group size:  4.0                                        
+-------------------------------------------------------------
+                   Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+-------------------------------------------------------------
+Intercept           0.002    0.000 38.205 0.000  0.001  0.002
+C(timepoint)[T.2]  -0.000    0.000 -0.653 0.514 -0.000  0.000
+C(timepoint)[T.3]  -0.000    0.000 -0.384 0.701 -0.000  0.000
+C(timepoint)[T.4]  -0.000    0.000 -0.264 0.792 -0.000  0.000
+subject Var         0.000    0.000                           
+=============================================================

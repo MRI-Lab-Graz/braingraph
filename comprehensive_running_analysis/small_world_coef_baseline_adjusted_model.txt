@@ -1,0 +1,21 @@
+MODEL: baseline_adjusted
+FORMULA: small_world_coef ~ C(timepoint) + baseline_value
+============================================================
+            Mixed Linear Model Regression Results
+==============================================================
+Model:            MixedLM Dependent Variable: small_world_coef
+No. Observations: 87      Method:             REML            
+No. Groups:       22      Scale:              0.0025          
+Min. group size:  3       Log-Likelihood:     121.6313        
+Max. group size:  4       Converged:          Yes             
+Mean group size:  4.0                                         
+--------------------------------------------------------------
+                    Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+--------------------------------------------------------------
+Intercept            0.186    0.048  3.876 0.000  0.092  0.279
+C(timepoint)[T.2]   -0.005    0.015 -0.357 0.721 -0.035  0.024
+C(timepoint)[T.3]   -0.005    0.015 -0.336 0.737 -0.035  0.025
+C(timepoint)[T.4]   -0.009    0.015 -0.597 0.550 -0.039  0.021
+baseline_value       0.666    0.084  7.946 0.000  0.502  0.831
+subject Var          0.000    0.005                           
+==============================================================

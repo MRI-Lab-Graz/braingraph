@@ -1,0 +1,20 @@
+MODEL: categorical_timepoint
+FORMULA: global_efficiency ~ C(timepoint)
+============================================================
+             Mixed Linear Model Regression Results
+===============================================================
+Model:            MixedLM Dependent Variable: global_efficiency
+No. Observations: 87      Method:             REML             
+No. Groups:       22      Scale:              0.0001           
+Min. group size:  3       Log-Likelihood:     251.8368         
+Max. group size:  4       Converged:          Yes              
+Mean group size:  4.0                                          
+---------------------------------------------------------------
+                    Coef.  Std.Err.    z    P>|z| [0.025 0.975]
+---------------------------------------------------------------
+Intercept            0.871    0.004 236.026 0.000  0.864  0.878
+C(timepoint)[T.2]   -0.003    0.002  -1.332 0.183 -0.007  0.001
+C(timepoint)[T.3]   -0.003    0.002  -1.182 0.237 -0.007  0.002
+C(timepoint)[T.4]    0.000    0.002   0.146 0.884 -0.004  0.005
+Group Var            0.000    0.012                            
+===============================================================

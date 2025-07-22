@@ -1,0 +1,21 @@
+MODEL: baseline_adjusted
+FORMULA: char_path_length ~ C(timepoint) + baseline_value
+============================================================
+            Mixed Linear Model Regression Results
+==============================================================
+Model:            MixedLM Dependent Variable: char_path_length
+No. Observations: 87      Method:             REML            
+No. Groups:       22      Scale:              0.0000          
+Min. group size:  3       Log-Likelihood:     608.2015        
+Max. group size:  4       Converged:          Yes             
+Mean group size:  4.0                                         
+--------------------------------------------------------------
+                      Coef. Std.Err.   z   P>|z| [0.025 0.975]
+--------------------------------------------------------------
+Intercept             0.001    0.000 2.206 0.027  0.000  0.002
+C(timepoint)[T.2]     0.000    0.000 0.323 0.746 -0.000  0.000
+C(timepoint)[T.3]     0.000    0.000 0.655 0.513 -0.000  0.000
+C(timepoint)[T.4]     0.000    0.000 0.523 0.601 -0.000  0.000
+baseline_value        0.781    0.099 7.906 0.000  0.588  0.975
+subject Var           0.000    0.000                          
+==============================================================

@@ -1,0 +1,69 @@
+{
+    "input_file": "graph_metrics_global_enhanced.csv",
+    "output_dir": "comprehensive_running_analysis",
+    "metrics": [
+        "global_efficiency",
+        "transitivity", 
+        "modularity",
+        "clustering_coef",
+        "char_path_length",
+        "density",
+        "assortativity",
+        "small_world_coef",
+        "sigma",
+        "efficiency_balance"
+    ],
+    "primary_model": "pre_post_contrast",
+    "model_formulas": {
+        "categorical_timepoint": "{metric} ~ C(timepoint)",
+        "pre_post_contrast": "{metric} ~ post_training",
+        "piecewise_slopes": "{metric} ~ time_in_control + time_in_training", 
+        "polynomial_time": "{metric} ~ timepoint + I(timepoint**2)",
+        "baseline_adjusted": "{metric} ~ C(timepoint) + baseline_value",
+        "random_slopes": "{metric} ~ C(timepoint)",
+        "growth_curve": "{metric} ~ time_centered + time_squared + (time_centered | subject)",
+        "dose_response": "{metric} ~ training_dose + (1|subject)",
+        "threshold_model": "{metric} ~ threshold_dose + (1|subject)",
+        "interaction_baseline": "{metric} ~ C(timepoint) * baseline_value"
+    },
+    "advanced_analyses": {
+        "nodal_analysis": {
+            "enabled": true,
+            "input_file": "graph_metrics_nodal.csv",
+            "focus_regions": ["frontal_regions", "motor_regions", "hippocampal_regions", "default_mode"]
+        },
+        "individual_response": {
+            "enabled": true,
+            "responder_threshold": "1_sd",
+            "clustering_analysis": true
+        },
+        "network_properties": {
+            "enabled": true,
+            "analyses": ["rich_club", "core_periphery", "flexibility", "resilience"]
+        },
+        "temporal_dynamics": {
+            "enabled": true,
+            "change_point_detection": true,
+            "trajectory_clustering": true
+        }
+    },
+    "statistical_options": {
+        "alpha_level": 0.05,
+        "multiple_comparison_correction": "fdr_bh",
+        "effect_size_thresholds": {
+            "small": 0.2,
+            "medium": 0.5,
+            "large": 0.8
+        },
+        "power_analysis": true,
+        "bootstrap_ci": true,
+        "n_bootstrap": 1000
+    },
+    "visualization_options": {
+        "individual_trajectories": true,
+        "effect_size_plots": true,
+        "network_plots": true,
+        "responder_analysis_plots": true,
+        "temporal_heatmaps": true
+    }
+}

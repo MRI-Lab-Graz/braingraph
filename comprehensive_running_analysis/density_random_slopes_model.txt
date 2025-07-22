@@ -1,0 +1,20 @@
+MODEL: random_slopes
+FORMULA: density ~ C(timepoint)
+============================================================
+            Mixed Linear Model Regression Results
+=============================================================
+Model:               MixedLM   Dependent Variable:   density 
+No. Observations:    87        Method:               REML    
+No. Groups:          22        Scale:                0.0002  
+Min. group size:     3         Log-Likelihood:       194.3090
+Max. group size:     4         Converged:            Yes     
+Mean group size:     4.0                                     
+-------------------------------------------------------------
+                  Coef.  Std.Err.    z    P>|z| [0.025 0.975]
+-------------------------------------------------------------
+Intercept          0.742    0.007 100.535 0.000  0.728  0.756
+C(timepoint)[T.2] -0.006    0.005  -1.333 0.183 -0.015  0.003
+C(timepoint)[T.3] -0.005    0.005  -1.182 0.237 -0.014  0.004
+C(timepoint)[T.4]  0.001    0.005   0.145 0.884 -0.008  0.010
+subject Var        0.001    0.025                            
+=============================================================

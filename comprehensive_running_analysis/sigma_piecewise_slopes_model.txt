@@ -1,0 +1,19 @@
+MODEL: piecewise_slopes
+FORMULA: sigma ~ time_in_control + time_in_training
+============================================================
+           Mixed Linear Model Regression Results
+===========================================================
+Model:               MixedLM  Dependent Variable:  sigma   
+No. Observations:    87       Method:              REML    
+No. Groups:          22       Scale:               0.0025  
+Min. group size:     3        Log-Likelihood:      110.9646
+Max. group size:     4        Converged:           Yes     
+Mean group size:     4.0                                   
+-----------------------------------------------------------
+                 Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+-----------------------------------------------------------
+Intercept         0.556    0.015 37.556 0.000  0.527  0.585
+time_in_control  -0.005    0.014 -0.336 0.737 -0.033  0.023
+time_in_training -0.001    0.008 -0.184 0.854 -0.016  0.014
+subject Var       0.002    0.021                           
+===========================================================

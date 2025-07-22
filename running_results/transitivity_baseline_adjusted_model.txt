@@ -1,0 +1,21 @@
+MODEL: baseline_adjusted
+FORMULA: transitivity ~ C(timepoint) + baseline_value
+============================================================
+           Mixed Linear Model Regression Results
+============================================================
+Model:              MixedLM Dependent Variable: transitivity
+No. Observations:   87      Method:             REML        
+No. Groups:         22      Scale:              0.0002      
+Min. group size:    3       Log-Likelihood:     220.5314    
+Max. group size:    4       Converged:          Yes         
+Mean group size:    4.0                                     
+------------------------------------------------------------
+                  Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+------------------------------------------------------------
+Intercept         -0.056    0.082 -0.686 0.493 -0.218  0.105
+C(timepoint)[T.2] -0.007    0.004 -1.714 0.087 -0.015  0.001
+C(timepoint)[T.3] -0.006    0.004 -1.400 0.161 -0.014  0.002
+C(timepoint)[T.4] -0.001    0.004 -0.238 0.812 -0.009  0.007
+baseline_value     1.071    0.104 10.335 0.000  0.868  1.274
+subject Var        0.000    0.004                           
+============================================================

@@ -1,0 +1,21 @@
+MODEL: baseline_adjusted
+FORMULA: global_efficiency ~ C(timepoint) + baseline_value
+============================================================
+             Mixed Linear Model Regression Results
+===============================================================
+Model:            MixedLM Dependent Variable: global_efficiency
+No. Observations: 87      Method:             REML             
+No. Groups:       22      Scale:              0.0001           
+Min. group size:  3       Log-Likelihood:     268.3372         
+Max. group size:  4       Converged:          Yes              
+Mean group size:  4.0                                          
+---------------------------------------------------------------
+                     Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+---------------------------------------------------------------
+Intercept            -0.017    0.094 -0.182 0.856 -0.201  0.167
+C(timepoint)[T.2]    -0.003    0.002 -1.333 0.183 -0.007  0.001
+C(timepoint)[T.3]    -0.003    0.002 -1.183 0.237 -0.007  0.002
+C(timepoint)[T.4]     0.000    0.002  0.159 0.874 -0.004  0.005
+baseline_value        1.020    0.108  9.444 0.000  0.808  1.231
+Group Var             0.000    0.002                           
+===============================================================

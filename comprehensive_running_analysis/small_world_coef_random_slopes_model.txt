@@ -1,0 +1,20 @@
+MODEL: random_slopes
+FORMULA: small_world_coef ~ C(timepoint)
+============================================================
+            Mixed Linear Model Regression Results
+==============================================================
+Model:            MixedLM Dependent Variable: small_world_coef
+No. Observations: 87      Method:             REML            
+No. Groups:       22      Scale:              0.0025          
+Min. group size:  3       Log-Likelihood:     108.2517        
+Max. group size:  4       Converged:          Yes             
+Mean group size:  4.0                                         
+--------------------------------------------------------------
+                    Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+--------------------------------------------------------------
+Intercept            0.556    0.015 37.440 0.000  0.527  0.585
+C(timepoint)[T.2]   -0.005    0.015 -0.356 0.722 -0.035  0.024
+C(timepoint)[T.3]   -0.005    0.015 -0.336 0.737 -0.035  0.025
+C(timepoint)[T.4]   -0.008    0.015 -0.535 0.592 -0.038  0.022
+subject Var          0.002    0.021                           
+==============================================================

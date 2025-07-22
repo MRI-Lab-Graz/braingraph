@@ -1,0 +1,4 @@
+Cluster_ID,Size_Edges,Size_Nodes,Test_Statistic,P_Value,Significant,Nodes
+0,25,10,237.991,0.000,Yes,"0, 1, 2, 3, 4, 30, 31, 32, 33, 34"
+1,1,2,4.115,0.901,No,"10, 22"
+2,1,2,4.126,0.895,No,"39, 55"

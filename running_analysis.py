@@ -185,10 +185,15 @@ def piecewise_analysis(df, metric):
     print(f"\n=== PIECEWISE ANALYSIS: {metric} ===")
     
     # Model with different slopes for control and training periods
-    formula = f"{metric} ~ time_in_control + time_in_training + (1|subject)"
+    # Use correct statsmodels syntax for mixed effects
+    formula = f"{metric} ~ time_in_control + time_in_training"
     
     try:
-        model = smf.mixedlm(formula, df, groups="subject")
+        # Ensure subject column is string type
+        df_analysis = df.copy()
+        df_analysis['subject'] = df_analysis['subject'].astype(str)
+        
+        model = smf.mixedlm(formula, df_analysis, groups=df_analysis["subject"])
         result = model.fit()
         
         return {
@@ -213,10 +218,13 @@ def dose_response_analysis(df, metric):
     training_data = df[df['timepoint'] >= 2].copy()
     training_data['training_time'] = training_data['timepoint'] - 2  # 0, 1, 2
     
-    formula = f"{metric} ~ training_time + (1|subject)"
+    formula = f"{metric} ~ training_time"
     
     try:
-        model = smf.mixedlm(formula, training_data, groups="subject")
+        # Ensure subject column is string type
+        training_data['subject'] = training_data['subject'].astype(str)
+        
+        model = smf.mixedlm(formula, training_data, groups=training_data["subject"])
         result = model.fit()
         
         return {
@@ -373,7 +381,8 @@ def run_config_models(df, metric, model_formulas, primary_model, output_dir):
             print(f"Formula: {formula}")
             
             # Run mixed-effects model
-            model = smf.mixedlm(formula, df_model, groups="subject")
+            df_model['subject'] = df_model['subject'].astype(str)
+            model = smf.mixedlm(formula, df_model, groups=df_model["subject"])
             result = model.fit()
             
             # Save detailed results
@@ -433,6 +442,12 @@ def run_config_models(df, metric, model_formulas, primary_model, output_dir):
     return results
 
 def main():
+    print("🏃‍♂️ RUNNING TRAINING ANALYSIS")
+    print("="*50)
+    print("Advanced statistical analysis for running intervention study")
+    print("22 subjects × 4 timepoints (control: T1→T2, training: T2→T4)")
+    print("="*50)
+    
     parser = argparse.ArgumentParser(description="Advanced running training analysis")
     parser.add_argument("--config", type=str, help="Path to JSON configuration file")
     parser.add_argument("--data", type=str, help="Path to graph metrics CSV (overrides config)")
@@ -441,105 +456,263 @@ def main():
     
     args = parser.parse_args()
     
+    # Show help if no arguments
+    if not args.config and not args.data:
+        print("❌ No arguments provided!")
+        print("\n📋 Usage options:")
+        print("1. python running_analysis.py --config running_config.json")
+        print("2. python running_analysis.py --data graph_metrics_global.csv")
+        print("3. python running_analysis.py --config running_config.json --metrics global_efficiency")
+        print("\n📁 Available files in current directory:")
+        for f in sorted(os.listdir('.')):
+            if f.endswith(('.csv', '.json')):
+                print(f"  - {f}")
+        return
+    
     # Load configuration if provided
     config = {}
     if args.config:
-        with open(args.config, 'r') as f:
-            config = json.load(f)
+        print(f"📋 Loading configuration: {args.config}")
+        try:
+            with open(args.config, 'r') as f:
+                config = json.load(f)
+            print("✅ Configuration loaded successfully")
+            
+            # Show config summary
+            if 'model_formulas' in config:
+                print(f"🔬 Found {len(config['model_formulas'])} model formulas")
+                primary = config.get('primary_model', 'none')
+                print(f"🎯 Primary model: {primary}")
+            
+        except Exception as e:
+            print(f"❌ Error loading configuration: {e}")
+            return
     
     # Command line arguments override config file
     data_file = args.data or config.get("input_file", config.get("data_file"))
     output_dir = args.output or config.get("output_folder", config.get("output_dir", "running_analysis_results"))
     metrics_list = args.metrics or config.get("metrics")
     
+    print(f"\n📊 Input data file: {data_file}")
+    print(f"📁 Output directory: {output_dir}")
+    
     # Get model formulas from config
     model_formulas = config.get("model_formulas", {})
     primary_model = config.get("primary_model", "pre_post_contrast")
     
+    # Validate data file
     if not data_file:
-        parser.error("Either --data argument or 'input_file'/'data_file' in config file is required")
+        print("❌ No data file specified!")
+        print("   Either use --data argument or specify 'input_file' in config")
+        return
+        
+    if not os.path.exists(data_file):
+        print(f"❌ Data file not found: {data_file}")
+        print("\n📁 Available CSV files:")
+        for f in sorted(os.listdir('.')):
+            if f.endswith('.csv'):
+                print(f"  - {f}")
+        return
     
-    # Update args for backward compatibility
-    args.data = data_file
-    args.output = output_dir
-    args.metrics = metrics_list
-    
-    # Create output directory
-    os.makedirs(args.output, exist_ok=True)
-    os.makedirs(os.path.join(args.output, "plots"), exist_ok=True)
+    # Create output directories
+    print(f"\n🔧 Setting up output directories...")
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(os.path.join(output_dir, "plots"), exist_ok=True)
+    os.makedirs(os.path.join(output_dir, "summaries"), exist_ok=True)
+    print(f"✅ Created: {output_dir}/")
+    print(f"✅ Created: {output_dir}/plots/")
+    print(f"✅ Created: {output_dir}/summaries/")
     
     # Load and prepare data
-    print("Loading and preparing data...")
-    df, available_metrics = load_and_prepare_data(args.data)
+    print(f"\n🔄 Loading and preparing data from: {data_file}")
+    try:
+        df, available_metrics = load_and_prepare_data(data_file)
+        print(f"✅ Data loaded successfully!")
+        print(f"   📊 Shape: {df.shape}")
+        print(f"   👥 Subjects: {df['subject'].nunique()}")
+        print(f"   ⏱️  Timepoints: {sorted(df['timepoint'].unique())}")
+        print(f"   📈 Available metrics: {len(available_metrics)}")
+        
+        # Show data completeness
+        completeness = df.groupby('subject').size()
+        complete_subjects = (completeness == 4).sum()
+        print(f"   ✅ Complete data (4 sessions): {complete_subjects}/{len(completeness)} subjects")
+        
+        if complete_subjects < len(completeness):
+            incomplete = completeness[completeness < 4]
+            print(f"   ⚠️  Incomplete subjects: {list(incomplete.index)} (sessions: {list(incomplete.values)})")
+        
+    except Exception as e:
+        print(f"❌ Error loading data: {e}")
+        import traceback
+        traceback.print_exc()
+        return
     
-    # Select metrics to analyze
-    if args.metrics:
-        metrics = [m for m in args.metrics if m in available_metrics]
+    # Select and validate metrics
+    if metrics_list:
+        print(f"\n🎯 Requested metrics: {metrics_list}")
+        metrics = [m for m in metrics_list if m in available_metrics]
+        missing_metrics = [m for m in metrics_list if m not in available_metrics]
+        
+        if missing_metrics:
+            print(f"❌ Metrics not found in data: {missing_metrics}")
+        if not metrics:
+            print(f"❌ None of the requested metrics found!")
+            print(f"📈 Available metrics: {available_metrics}")
+            return
     else:
         metrics = available_metrics
+        print(f"\n🎯 Analyzing all available metrics: {len(metrics)} total")
     
-    print(f"Analyzing {len(metrics)} metrics for {df['subject'].nunique()} subjects")
-    print(f"Sessions per subject: {df.groupby('subject').size().describe()}")
+    print(f"\n📊 Selected metrics for analysis:")
+    for i, metric in enumerate(metrics, 1):
+        print(f"   {i}. {metric}")
     
-    # Run analyses for each metric
+    # Show model formulas if available
+    if model_formulas:
+        print(f"\n🔬 Model formulas from config:")
+        for name, formula in model_formulas.items():
+            marker = " 🎯" if name == primary_model else ""
+            print(f"   - {name}: {formula}{marker}")
+    
+    # Initialize results storage
     all_results = {}
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    for metric in metrics:
-        print(f"\n{'='*60}")
-        print(f"ANALYZING: {metric}")
-        print(f"{'='*60}")
+    print(f"\n🚀 Starting analysis at {datetime.now().strftime('%H:%M:%S')}...")
+    print("="*50)
+    
+    # Analyze each metric
+    for i, metric in enumerate(metrics):
+        print(f"\n📈 [{i+1}/{len(metrics)}] ANALYZING: {metric}")
+        print("-" * 40)
         
-        metric_results = {}
-        
-        # 1. Config-based model analysis (if model formulas provided)
-        if model_formulas:
-            config_results = run_config_models(df, metric, model_formulas, primary_model, args.output)
-            metric_results['config_models'] = config_results
-        
-        # 2. Contrast analysis (built-in approach)
-        contrast_results, changes_df = contrast_analysis(df, metric, os.path.join(args.output, "plots"))
-        metric_results['contrast'] = contrast_results
-        
-        # Save individual changes
-        changes_df.to_csv(os.path.join(args.output, f"{metric}_changes.csv"), index=False)
-        
-        # 3. Piecewise analysis (built-in)
-        piecewise_results = piecewise_analysis(df, metric)
-        if piecewise_results:
-            metric_results['piecewise'] = piecewise_results
-        
-        # 4. Dose-response analysis (built-in)
-        dose_results = dose_response_analysis(df, metric)
-        if dose_results:
-            metric_results['dose_response'] = dose_results
-        
-        # 5. Power analysis
-        power_results = generate_power_analysis_recommendations(df, metric, contrast_results, args.output)
-        if power_results:
-            metric_results['power'] = power_results
-        
-        # 5. Config-based model analysis
-        config_results = run_config_models(df, metric, model_formulas, primary_model, args.output)
-        if config_results:
-            metric_results['config_models'] = config_results
-        
-        all_results[metric] = metric_results
-        
-        # Print summary
-        print(f"\nSUMMARY for {metric}:")
-        print(f"Training vs Control effect: {contrast_results['training_vs_control']['mean_diff']:.4f}")
-        print(f"P-value: {contrast_results['training_vs_control']['p_value']:.4f}")
-        print(f"Effect size (Cohen's d): {contrast_results['training_vs_control']['effect_size']:.4f}")
+        try:
+            metric_results = {}
+            
+            # 1. Config-based model analysis (if model formulas provided)
+            if model_formulas:
+                print("🔬 Running config-based model analysis...")
+                config_results = run_config_models(df, metric, model_formulas, primary_model, output_dir)
+                metric_results['config_models'] = config_results
+                print("✅ Config models completed")
+            
+            # 2. Contrast analysis (built-in approach)
+            print("🔍 Running contrast analysis (control vs training periods)...")
+            contrast_results, changes_df = contrast_analysis(df, metric, os.path.join(output_dir, "plots"))
+            metric_results['contrast'] = contrast_results
+            
+            # Show key results immediately
+            if contrast_results and 'training_vs_control' in contrast_results:
+                effect = contrast_results['training_vs_control']['mean_diff']
+                p_val = contrast_results['training_vs_control']['p_value']
+                effect_size = contrast_results['training_vs_control']['effect_size']
+                
+                print(f"   📊 Training effect: {effect:.6f}")
+                print(f"   📊 P-value: {p_val:.4f}")
+                print(f"   📊 Effect size (Cohen's d): {effect_size:.3f}")
+                
+                if p_val < 0.001:
+                    print("   🎉 HIGHLY SIGNIFICANT! (p < 0.001)")
+                elif p_val < 0.01:
+                    print("   ✅ VERY SIGNIFICANT! (p < 0.01)")
+                elif p_val < 0.05:
+                    print("   ✅ SIGNIFICANT! (p < 0.05)")
+                elif p_val < 0.1:
+                    print("   📈 TRENDING (p < 0.1)")
+                else:
+                    print("   ❌ Not significant (p ≥ 0.1)")
+                
+                # Effect size interpretation
+                if abs(effect_size) >= 0.8:
+                    print("   💪 LARGE effect size")
+                elif abs(effect_size) >= 0.5:
+                    print("   📈 MEDIUM effect size")
+                elif abs(effect_size) >= 0.2:
+                    print("   📊 SMALL effect size")
+                else:
+                    print("   📏 Minimal effect size")
+            
+            # Save individual changes
+            changes_df.to_csv(os.path.join(output_dir, f"{metric}_changes.csv"), index=False)
+            print(f"   💾 Saved change scores: {metric}_changes.csv")
+            
+            # 3. Additional analyses
+            print("🔍 Running additional analyses...")
+            
+            # Piecewise analysis (built-in)
+            try:
+                print("   ⚙️  Piecewise regression...")
+                piecewise_results = piecewise_analysis(df, metric)
+                if piecewise_results:
+                    metric_results['piecewise'] = piecewise_results
+                    print("   ✅ Piecewise analysis completed")
+                else:
+                    print("   ⚠️  Piecewise analysis failed")
+            except Exception as e:
+                print(f"   ❌ Piecewise analysis error: {e}")
+            
+            # Dose-response analysis (built-in)
+            try:
+                print("   💊 Dose-response analysis...")
+                dose_results = dose_response_analysis(df, metric)
+                if dose_results:
+                    metric_results['dose_response'] = dose_results
+                    print("   ✅ Dose-response analysis completed")
+                else:
+                    print("   ⚠️  Dose-response analysis failed")
+            except Exception as e:
+                print(f"   ❌ Dose-response analysis error: {e}")
+            
+            # Power analysis
+            try:
+                print("   ⚡ Power analysis...")
+                power_results = generate_power_analysis_recommendations(df, metric, contrast_results, output_dir)
+                if power_results:
+                    metric_results['power'] = power_results
+                    power = power_results['observed_power']
+                    print(f"   📊 Observed power: {power:.3f} ({power*100:.1f}%)")
+                    if power < 0.8:
+                        print(f"   ⚠️  Study may be underpowered (< 80%)")
+                    else:
+                        print(f"   ✅ Study appears adequately powered")
+                else:
+                    print("   ⚠️  Power analysis failed")
+            except Exception as e:
+                print(f"   ❌ Power analysis error: {e}")
+            
+            all_results[metric] = metric_results
+            
+            # Final summary for this metric
+            print(f"\n📋 SUMMARY for {metric}:")
+            if contrast_results and 'training_vs_control' in contrast_results:
+                effect = contrast_results['training_vs_control']['mean_diff']
+                p_val = contrast_results['training_vs_control']['p_value']
+                effect_size = contrast_results['training_vs_control']['effect_size']
+                sig_marker = "✅" if p_val < 0.05 else "❌"
+                print(f"   {sig_marker} Effect: {effect:.4f}, p = {p_val:.4f}, d = {effect_size:.3f}")
+            
+            print(f"✅ Completed analysis for {metric}")
+            
+        except Exception as e:
+            print(f"❌ Error analyzing {metric}: {e}")
+            import traceback
+            traceback.print_exc()
+            continue
     
     # Save comprehensive results
+    print(f"\n💾 Saving comprehensive results...")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     # Create summary report
-    with open(os.path.join(args.output, f"running_analysis_summary_{timestamp}.txt"), "w") as f:
+    summary_file = f"running_analysis_summary_{timestamp}.txt"
+    print(f"📄 Creating summary report: {summary_file}")
+    
+    with open(os.path.join(output_dir, summary_file), "w") as f:
         f.write("RUNNING TRAINING EFFECT ANALYSIS SUMMARY\n")
         f.write("="*50 + "\n\n")
         f.write(f"Analysis performed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write(f"Data file: {args.data}\n")
+        f.write(f"Data file: {data_file}\n")
         f.write(f"Number of subjects: {df['subject'].nunique()}\n")
         f.write(f"Number of metrics: {len(metrics)}\n\n")
         
@@ -556,27 +729,30 @@ def main():
         
         significant_effects = []
         for metric, results in all_results.items():
-            p_val = results['contrast']['training_vs_control']['p_value']
-            effect_size = results['contrast']['training_vs_control']['effect_size']
-            mean_diff = results['contrast']['training_vs_control']['mean_diff']
-            
-            f.write(f"\n{metric.upper()}:\n")
-            f.write(f"  Training vs Control difference: {mean_diff:.6f}\n")
-            f.write(f"  P-value: {p_val:.4f}\n")
-            f.write(f"  Effect size (Cohen's d): {effect_size:.4f}\n")
-            f.write(f"  Significance: {'***' if p_val < 0.001 else '**' if p_val < 0.01 else '*' if p_val < 0.05 else 'ns'}\n")
-            
-            # Add power analysis if available
-            if 'power' in results and results['power']:
-                power_info = results['power']
-                f.write(f"  Observed power: {power_info['observed_power']:.3f} ({power_info['observed_power']*100:.1f}%)\n")
-                f.write(f"  Sample size for 80% power: {power_info['n_for_80_power']:.0f}\n")
-            
-            if p_val < 0.05:
-                significant_effects.append((metric, p_val, effect_size))
+            if 'contrast' in results and 'training_vs_control' in results['contrast']:
+                p_val = results['contrast']['training_vs_control']['p_value']
+                effect_size = results['contrast']['training_vs_control']['effect_size']
+                mean_diff = results['contrast']['training_vs_control']['mean_diff']
+                
+                f.write(f"\n{metric.upper()}:\n")
+                f.write(f"  Training vs Control difference: {mean_diff:.6f}\n")
+                f.write(f"  P-value: {p_val:.4f}\n")
+                f.write(f"  Effect size (Cohen's d): {effect_size:.4f}\n")
+                f.write(f"  Significance: {'***' if p_val < 0.001 else '**' if p_val < 0.01 else '*' if p_val < 0.05 else 'ns'}\n")
+                
+                # Add power analysis if available
+                if 'power' in results and results['power']:
+                    power_info = results['power']
+                    f.write(f"  Observed power: {power_info['observed_power']:.3f} ({power_info['observed_power']*100:.1f}%)\n")
+                    f.write(f"  Sample size for 80% power: {power_info['n_for_80_power']:.0f}\n")
+                
+                if p_val < 0.05:
+                    significant_effects.append((metric, p_val, effect_size))
         
         if significant_effects:
             f.write(f"\nSIGNIFICANT TRAINING EFFECTS (p < 0.05):\n")
+            significant_count = len(significant_effects)
+            f.write(f"Found {significant_count} significant effect(s):\n")
             for metric, p_val, effect_size in sorted(significant_effects, key=lambda x: x[1]):
                 f.write(f"- {metric}: p = {p_val:.4f}, d = {effect_size:.3f}\n")
         else:
@@ -590,12 +766,41 @@ def main():
                 power = results['power']['observed_power']
                 f.write(f"{metric}: {power:.3f} ({power*100:.1f}%)\n")
     
-    # Create effect size summary plot
-    create_effect_size_summary_plot(all_results, os.path.join(args.output, "plots"))
+    print("✅ Summary report saved")
     
-    print(f"\nAnalysis complete! Results saved to: {args.output}")
-    print(f"- Summary report: running_analysis_summary_{timestamp}.txt")
-    print(f"- Individual plots: plots/ directory")
-    print(f"- Change scores: *_changes.csv files")
-    print(f"- Power analyses: *_power_analysis.txt files")
-    print(f"- Effect size summary: plots/training_effects_summary.png")
+    # Create effect size summary plot
+    print("📊 Creating effect size summary plot...")
+    create_effect_size_summary_plot(all_results, os.path.join(output_dir, "plots"))
+    
+    # Final summary to console
+    print(f"\n🎉 ANALYSIS COMPLETE!")
+    print("="*50)
+    print(f"⏱️  Analysis time: {datetime.now().strftime('%H:%M:%S')}")
+    print(f"📊 Metrics analyzed: {len(metrics)}")
+    
+    # Count significant results
+    significant_count = sum(1 for results in all_results.values() 
+                          if 'contrast' in results and 'training_vs_control' in results['contrast'] 
+                          and results['contrast']['training_vs_control']['p_value'] < 0.05)
+    
+    if significant_count > 0:
+        print(f"✅ Significant training effects found: {significant_count}/{len(metrics)}")
+        print("🎯 Check individual plots and summary for details!")
+    else:
+        print("❌ No significant training effects found")
+        print("💡 Consider power analysis recommendations for future studies")
+    
+    print(f"\n📁 Results saved to: {output_dir}/")
+    print(f"   📄 Summary report: {summary_file}")
+    print(f"   📊 Individual plots: plots/ directory")
+    print(f"   💾 Change scores: *_changes.csv files")
+    print(f"   ⚡ Power analyses: *_power_analysis.txt files")
+    print(f"   📈 Effect size summary: plots/training_effects_summary.png")
+    
+    if model_formulas:
+        print(f"   🔬 Model summaries: *_model.txt files")
+    
+    print(f"\n🏃‍♂️ Running training analysis complete! 🧠")
+
+if __name__ == "__main__":
+    main()

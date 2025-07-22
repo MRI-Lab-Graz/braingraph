@@ -1,0 +1,24 @@
+MODEL: pre_post_contrast
+FORMULA: transitivity ~ post_training
+============================================================
+          Mixed Linear Model Regression Results
+==========================================================
+Model:            MixedLM Dependent Variable: transitivity
+No. Observations: 87      Method:             REML        
+No. Groups:       22      Scale:              0.0002      
+Min. group size:  3       Log-Likelihood:     209.5688    
+Max. group size:  4       Converged:          Yes         
+Mean group size:  4.0                                     
+----------------------------------------------------------
+                Coef. Std.Err.    z    P>|z| [0.025 0.975]
+----------------------------------------------------------
+Intercept       0.789    0.007 120.521 0.000  0.777  0.802
+post_training   0.000    0.003   0.020 0.984 -0.006  0.006
+subject Var     0.001    0.023                            
+==========================================================
+
+
+INTERPRETATION:
+Training effect: 0.000058
+P-value: 0.9842
+Significance: ns

@@ -1,0 +1,21 @@
+MODEL: baseline_adjusted
+FORMULA: clustering_coef ~ C(timepoint) + baseline_value
+============================================================
+            Mixed Linear Model Regression Results
+=============================================================
+Model:            MixedLM Dependent Variable: clustering_coef
+No. Observations: 87      Method:             REML           
+No. Groups:       22      Scale:              0.0000         
+Min. group size:  3       Log-Likelihood:     615.3750       
+Max. group size:  4       Converged:          Yes            
+Mean group size:  4.0                                        
+-------------------------------------------------------------
+                   Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+-------------------------------------------------------------
+Intercept           0.000    0.000  2.456 0.014  0.000  0.001
+C(timepoint)[T.2]  -0.000    0.000 -0.654 0.513 -0.000  0.000
+C(timepoint)[T.3]  -0.000    0.000 -0.385 0.700 -0.000  0.000
+C(timepoint)[T.4]  -0.000    0.000 -0.299 0.765 -0.000  0.000
+baseline_value      0.775    0.090  8.652 0.000  0.600  0.951
+subject Var         0.000    0.000                           
+=============================================================

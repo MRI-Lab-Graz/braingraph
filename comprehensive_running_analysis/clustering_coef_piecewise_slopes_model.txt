@@ -1,0 +1,19 @@
+MODEL: piecewise_slopes
+FORMULA: clustering_coef ~ time_in_control + time_in_training
+============================================================
+            Mixed Linear Model Regression Results
+=============================================================
+Model:            MixedLM Dependent Variable: clustering_coef
+No. Observations: 87      Method:             REML           
+No. Groups:       22      Scale:              0.0000         
+Min. group size:  3       Log-Likelihood:     609.1218       
+Max. group size:  4       Converged:          Yes            
+Mean group size:  4.0                                        
+-------------------------------------------------------------
+                   Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+-------------------------------------------------------------
+Intercept           0.002    0.000 38.315 0.000  0.001  0.002
+time_in_control    -0.000    0.000 -0.661 0.509 -0.000  0.000
+time_in_training    0.000    0.000  0.383 0.701 -0.000  0.000
+subject Var         0.000    0.000                           
+=============================================================

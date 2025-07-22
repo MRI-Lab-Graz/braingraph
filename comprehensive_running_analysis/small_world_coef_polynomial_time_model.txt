@@ -1,0 +1,19 @@
+MODEL: polynomial_time
+FORMULA: small_world_coef ~ timepoint + I(timepoint**2)
+============================================================
+            Mixed Linear Model Regression Results
+==============================================================
+Model:            MixedLM Dependent Variable: small_world_coef
+No. Observations: 87      Method:             REML            
+No. Groups:       22      Scale:              0.0025          
+Min. group size:  3       Log-Likelihood:     109.6631        
+Max. group size:  4       Converged:          Yes             
+Mean group size:  4.0                                         
+--------------------------------------------------------------
+                    Coef.  Std.Err.   z    P>|z| [0.025 0.975]
+--------------------------------------------------------------
+Intercept            0.560    0.031 17.854 0.000  0.499  0.622
+timepoint           -0.005    0.027 -0.195 0.845 -0.058  0.048
+I(timepoint ** 2)    0.001    0.005  0.107 0.915 -0.010  0.011
+subject Var          0.002    0.021                           
+==============================================================

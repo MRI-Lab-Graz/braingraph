@@ -1,0 +1,19 @@
+MODEL: piecewise_slopes
+FORMULA: modularity ~ time_in_control + time_in_training
+============================================================
+           Mixed Linear Model Regression Results
+============================================================
+Model:              MixedLM  Dependent Variable:  modularity
+No. Observations:   87       Method:              REML      
+No. Groups:         22       Scale:               0.0001    
+Min. group size:    3        Log-Likelihood:      257.8421  
+Max. group size:    4        Converged:           Yes       
+Mean group size:    4.0                                     
+------------------------------------------------------------
+                 Coef.  Std.Err.    z    P>|z| [0.025 0.975]
+------------------------------------------------------------
+Intercept         0.409    0.003 125.998 0.000  0.402  0.415
+time_in_control   0.000    0.002   0.165 0.869 -0.004  0.005
+time_in_training -0.001    0.001  -0.535 0.593 -0.003  0.002
+subject Var       0.000    0.009                            
+============================================================

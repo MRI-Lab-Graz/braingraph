@@ -1,0 +1,19 @@
+MODEL: piecewise_slopes
+FORMULA: global_efficiency ~ time_in_control + time_in_training
+============================================================
+             Mixed Linear Model Regression Results
+===============================================================
+Model:            MixedLM Dependent Variable: global_efficiency
+No. Observations: 87      Method:             REML             
+No. Groups:       22      Scale:              0.0001           
+Min. group size:  3       Log-Likelihood:     256.2276         
+Max. group size:  4       Converged:          Yes              
+Mean group size:  4.0                                          
+---------------------------------------------------------------
+                    Coef.  Std.Err.    z    P>|z| [0.025 0.975]
+---------------------------------------------------------------
+Intercept            0.871    0.004 236.145 0.000  0.864  0.878
+time_in_control     -0.003    0.002  -1.601 0.109 -0.008  0.001
+time_in_training     0.002    0.001   1.452 0.146 -0.001  0.004
+subject Var          0.000    0.012                            
+===============================================================

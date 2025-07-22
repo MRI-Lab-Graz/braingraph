@@ -1,0 +1,20 @@
+MODEL: random_slopes
+FORMULA: modularity ~ C(timepoint)
+============================================================
+            Mixed Linear Model Regression Results
+=============================================================
+Model:               MixedLM  Dependent Variable:  modularity
+No. Observations:    87       Method:              REML      
+No. Groups:          22       Scale:               0.0001    
+Min. group size:     3        Log-Likelihood:      253.2990  
+Max. group size:     4        Converged:           Yes       
+Mean group size:     4.0                                     
+-------------------------------------------------------------
+                  Coef.  Std.Err.    z    P>|z| [0.025 0.975]
+-------------------------------------------------------------
+Intercept          0.409    0.003 125.845 0.000  0.402  0.415
+C(timepoint)[T.2]  0.001    0.002   0.247 0.805 -0.004  0.005
+C(timepoint)[T.3] -0.001    0.002  -0.293 0.770 -0.005  0.004
+C(timepoint)[T.4] -0.001    0.002  -0.282 0.778 -0.005  0.004
+subject Var        0.000    0.009                            
+=============================================================

@@ -1,0 +1,24 @@
+MODEL: pre_post_contrast
+FORMULA: efficiency_balance ~ post_training
+============================================================
+             Mixed Linear Model Regression Results
+================================================================
+Model:            MixedLM Dependent Variable: efficiency_balance
+No. Observations: 87      Method:             REML              
+No. Groups:       22      Scale:              0.0004            
+Min. group size:  3       Log-Likelihood:     172.5132          
+Max. group size:  4       Converged:          Yes               
+Mean group size:  4.0                                           
+-----------------------------------------------------------------
+                 Coef.   Std.Err.     z     P>|z|  [0.025  0.975]
+-----------------------------------------------------------------
+Intercept         1.472     0.010  145.463  0.000   1.452   1.492
+post_training    -0.002     0.005   -0.388  0.698  -0.011   0.007
+subject Var       0.002     0.036                                
+================================================================
+
+
+INTERPRETATION:
+Training effect: -0.001764
+P-value: 0.6979
+Significance: ns

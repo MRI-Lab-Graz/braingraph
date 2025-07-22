@@ -1,0 +1,24 @@
+MODEL: pre_post_contrast
+FORMULA: density ~ post_training
+============================================================
+         Mixed Linear Model Regression Results
+========================================================
+Model:              MixedLM Dependent Variable: density 
+No. Observations:   87      Method:             REML    
+No. Groups:         22      Scale:              0.0002  
+Min. group size:    3       Log-Likelihood:     201.5177
+Max. group size:    4       Converged:          Yes     
+Mean group size:    4.0                                 
+--------------------------------------------------------
+              Coef. Std.Err.    z    P>|z| [0.025 0.975]
+--------------------------------------------------------
+Intercept     0.739    0.007 105.070 0.000  0.725  0.753
+post_training 0.001    0.003   0.179 0.858 -0.006  0.007
+subject Var   0.001    0.024                            
+========================================================
+
+
+INTERPRETATION:
+Training effect: 0.000582
+P-value: 0.8581
+Significance: ns
